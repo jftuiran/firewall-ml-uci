@@ -40,10 +40,51 @@ Ejecutar: abrir el notebook `Proyecto_ML_Telecom_Firewall.ipynb` descargar el da
 - `/artifacts/best_model.joblib` — pipeline completo (prep + modelo) y clases del label encoder.
 - `/artifacts/metadata.json` — hiperparámetros y métricas CV del mejor.
 
-## Conclusiones (plantilla)
-- El modelo Decision Tree — Grid + Reporte obtuvo el mejor **F1-macro** sobre CV, manteniendo buenas métricas en clases mayoritarias y razonable desempeño en las minoritarias.
-- Las variables de volumen/actividad (`Bytes`, `Packets`, `Elapsed Time (sec)`) muestran señal para distinguir acciones.
-- Siguientes pasos: calibración de probabilidades, *threshold tuning* para minoritarias (`reset-both`), interpretación (SHAP / permutaciones).
+
+## 8) Conclusiones.
+
+Este proyecto me sirvió para responder una pregunta muy práctica: ¿podemos anticipar qué hará el firewall (allow/deny/drop/reset-both) solo mirando estadísticas del tráfico? Después de probar varias opciones con validación cruzada 10-fold y ajustar hiperparámetros, sí: se puede, y bastante bien.
+
+¿Qué funcionó mejor?
+El modelo que mejor balance logró entre todas las clases fue DecisionTree, con:
+
+F1-macro (CV): 0.8897252371526377
+
+Balanced accuracy (CV): 0.8667559702430794
+
+Accuracy (CV): 0.9980925326092762
+
+Hiperparámetros clave: {'clf__criterion': 'gini', 'clf__max_depth': None, 'clf__min_samples_leaf': 1, 'clf__min_samples_split': 2}
+
+Aclaro que no me quedé solo con accuracy, porque en este dataset allow domina. Por eso prioricé F1-macro y balanced accuracy para no “hacer trampa” con la clase mayoritaria. Aun así, el modelo mantiene muy buenos números en allow, deny y drop. reset-both es la más dura (pocas filas), y ahí todavía hay margen de mejora.
+
+Qué variables parecen tener más peso (intuición):
+Los volúmenes y actividad (Bytes, Bytes Sent/Received, Packets, pkts_sent/received) y la duración (Elapsed Time (sec)) aportan mucha señal. Los puertos (origen/destino y NAT) también ayudan a contextualizar servicios/políticas.
+
+Limitaciones que vi:
+
+El desbalance pega fuerte en reset-both. Si miras solo accuracy, te engañas.
+
+El modelo no conoce las reglas del firewall; aprende patrones de los datos.
+
+Ensambles como RF/XGB son menos “explicables” de una pasada; conviene usar SHAP o importancia por permutación si lo llevamos a operación.
+
+Qué haría después (si tuviera un rato más):
+
+Ajustar umbrales por clase para subir el recall de reset-both sin romper el resto.
+
+Calibrar probabilidades para tomar decisiones con confianza (Platt/Isotónica).
+
+Probar SMOTE o, si el objetivo del curso lo permite, una versión binaria (permitir vs bloquear).
+
+Añadir interpretabilidad (SHAP) para justificar decisiones ante el equipo de redes/seguridad.
+
+Si hay tiempo/fecha, hacer validación temporal (entrenar con un tramo y testear en otro).
+
+Pensar en monitoreo: data drift, métricas por clase y alertas si cae el recall de la minoritaria.
+
+En resumen: me quedo con que sí es posible predecir la acción del firewall con buen rendimiento y, sobre todo, sin sesgarse por la clase mayoritaria. Con dos o tres ajustes de los que dejé arriba, esto podría usarse como apoyo a decisiones para revisar políticas, simular cambios y priorizar eventos antes de tocar producción.
+
 
 ## Licencia y créditos
 - Datos: UCI Machine Learning Repository — Internet Firewall Data.
