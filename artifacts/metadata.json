@@ -1,0 +1,22 @@
+{
+  "best_model_name": "DecisionTree",
+  "best_params": {
+    "clf__criterion": "gini",
+    "clf__max_depth": null,
+    "clf__min_samples_leaf": 1,
+    "clf__min_samples_split": 2
+  },
+  "metrics_cv": {
+    "accuracy_cv": 0.9980925326092762,
+    "f1_macro_cv": 0.8897252371526377,
+    "balanced_accuracy_cv": 0.8667559702430794
+  },
+  "label_mapping": {
+    "allow": 0,
+    "deny": 1,
+    "drop": 2,
+    "reset-both": 3
+  },
+  "dataset_path": null,
+  "saved_at": "D:\\29092025\\DESKTOP\\Machine\\best_model.joblib"
+}
